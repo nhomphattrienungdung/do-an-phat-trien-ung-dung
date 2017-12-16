@@ -1,0 +1,148 @@
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+
+public class Database {
+	public static Connection con= null;
+	PreparedStatement stmt=null;
+	public Database() {
+		connect();
+	}
+	public void connect() {
+		String url="jdbc:sqlserver://localhost:62881;databasename=Mail";
+		String user= "sa";
+		String password ="sapassword";
+		try {
+			con=DriverManager.getConnection(url, user, password);
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	// Ki?m tra tài kho?n ð? có trong h? th?ng hay chýa
+		public boolean isRightUser(String user) {
+			try {
+				stmt = con.prepareStatement("SELECT * FROM Mail where users=?");
+				stmt.setString(1, user);
+				ResultSet rs= stmt.executeQuery();
+				boolean b = true;
+				if(rs.next()) {
+					return b;
+				}
+			}
+			catch(SQLException e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+		
+		// Ki?m tra m?t kh?u có ðúng hay không
+		public boolean isRightPass(String user, String pass) {
+			try {
+				stmt = con.prepareStatement("select pass from Mail where users=?");
+				stmt.setString(1, user);				
+				ResultSet rs = stmt.executeQuery();
+				String rs_pass = "";
+				while(rs.next())
+					rs_pass = rs.getString(1);
+					
+				if (rs_pass.compareTo(pass) == 0) 
+					return true;
+			}
+			catch(SQLException e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+		
+		// Ki?m tra chu?i ð? khôi ph?c m?t kh?u có ðúng hay không
+		public boolean isRight_resetPass(String user, String resetPass) {
+			try {
+				
+				stmt = con.prepareStatement("select resetPass from Mail where users=?");
+				stmt.setString(1, user);
+				ResultSet rs = stmt.executeQuery();
+				String rs_resetPass = "";
+				while(rs.next()) 
+					rs_resetPass = rs.getString(1);
+				
+				if (rs_resetPass.compareTo(resetPass) == 0)
+					return true;
+			}
+			catch(SQLException e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+		
+		// L?y m?t kh?u
+		public String getPass(String user) {
+			try {
+				
+				stmt =con.prepareStatement("select pass from Mail where users=?");
+				stmt.setString(1, user);
+				ResultSet rs = stmt.executeQuery();
+				
+				String rs_pass = "";
+				while(rs.next())
+					rs_pass = rs.getString(1);
+				return rs_pass;
+			}
+			catch(SQLException e) {
+				e.printStackTrace();
+			}
+			return "error";
+		}
+		
+		// T?o m?i m?t tài kho?n
+		public boolean create_User(String user, String pass, String resetPass) {
+			int n=0;
+			try {
+				stmt = con.prepareStatement("insert into Mail values(?,?,?)");
+				stmt.setString(1, user);
+				stmt.setString(2, pass);
+				stmt.setString(3, resetPass);
+				n=stmt.executeUpdate();
+			}
+			catch(SQLException e) {
+				e.printStackTrace();
+			}
+			return n>0;
+		}
+		
+		// C?p nh?t m?t kh?u m?i
+		public boolean update_Pass(String user, String pass) {
+			int n=0;
+			try {
+				stmt= con.prepareStatement("update Mail set pass=? where users=?");
+				stmt.setString(1, pass);
+				stmt.setString(2, user);
+				stmt.executeUpdate();
+				
+			}
+			catch(SQLException e) {
+				e.printStackTrace();
+			}
+			return n>0;
+		}
+		
+		// C?p nh?t chu?i khôi ph?c m?t kh?u m?i
+		public boolean update_resetPass(String user, String resetPass) {
+			int n= 0;
+			try {
+				stmt= con.prepareStatement("update Mail set resetPass=? where users=?");
+				stmt.setString(1, resetPass);
+				stmt.setString(2, user);
+				stmt.executeUpdate();
+				
+			}
+			catch(SQLException e) {
+				e.printStackTrace();
+			}
+			return n>0;
+		}
+}
